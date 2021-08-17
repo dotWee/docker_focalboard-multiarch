@@ -11,6 +11,10 @@ ifeq ($(BUILD_NUMBER),)
 	BUILD_NUMBER := dev
 endif
 
+# If we don't set the platform it defaults to amd64
+BUILD_PLATFORM ?= $(TARGETPLATFORM)
+
+
 LDFLAGS += -X "github.com/mattermost/focalboard/server/model.BuildNumber=$(BUILD_NUMBER)"
 LDFLAGS += -X "github.com/mattermost/focalboard/server/model.BuildDate=$(BUILD_DATE)"
 LDFLAGS += -X "github.com/mattermost/focalboard/server/model.BuildHash=$(BUILD_HASH)"
@@ -32,20 +36,20 @@ server: ## Build server for local environment.
 server-mac: ## Build server for Mac.
 	mkdir -p bin/mac
 	$(eval LDFLAGS += -X "github.com/mattermost/focalboard/server/model.Edition=mac")
-	cd server; env GOOS=darwin GOARCH=amd64 go build -ldflags '$(LDFLAGS)' -o ../bin/mac/focalboard-server ./main
+	cd server; env GOOS=darwin GOARCH=$(BUILD_PLATFORM) go build -ldflags '$(LDFLAGS)' -o ../bin/mac/focalboard-server ./main
 
 server-linux: ## Build server for Linux.
 	mkdir -p bin/linux
 	$(eval LDFLAGS += -X "github.com/mattermost/focalboard/server/model.Edition=linux")
-	cd server; env GOOS=linux GOARCH=amd64 go build -ldflags '$(LDFLAGS)' -o ../bin/linux/focalboard-server ./main
+	cd server; env GOOS=linux GOARCH=$(BUILD_PLATFORM) go build -ldflags '$(LDFLAGS)' -o ../bin/linux/focalboard-server ./main
 
 server-win: ## Build server for Windows.
 	$(eval LDFLAGS += -X "github.com/mattermost/focalboard/server/model.Edition=win")
-	cd server; env GOOS=windows GOARCH=amd64 go build -ldflags '$(LDFLAGS)' -o ../bin/win/focalboard-server.exe ./main
+	cd server; env GOOS=windows GOARCH=$(BUILD_PLATFORM) go build -ldflags '$(LDFLAGS)' -o ../bin/win/focalboard-server.exe ./main
 
 server-dll: ## Build server as Windows DLL.
 	$(eval LDFLAGS += -X "github.com/mattermost/focalboard/server/model.Edition=win")
-	cd server; env GOOS=windows GOARCH=amd64 go build -ldflags '$(LDFLAGS)' -buildmode=c-shared -o ../bin/win-dll/focalboard-server.dll ./main
+	cd server; env GOOS=windows GOARCH=$(BUILD_PLATFORM) go build -ldflags '$(LDFLAGS)' -buildmode=c-shared -o ../bin/win-dll/focalboard-server.dll ./main
 
 server-linux-package: server-linux webapp
 	rm -rf package
@@ -57,7 +61,7 @@ server-linux-package: server-linux webapp
 	cp NOTICE.txt package/${PACKAGE_FOLDER}
 	cp webapp/NOTICE.txt package/${PACKAGE_FOLDER}/webapp-NOTICE.txt
 	mkdir -p dist
-	cd package && tar -czvf ../dist/focalboard-server-linux-amd64.tar.gz ${PACKAGE_FOLDER}
+	cd package && tar -czvf ../dist/focalboard-server-linux-${BUILD_PLATFORM}.tar.gz ${PACKAGE_FOLDER}
 	rm -rf package
 
 server-linux-package-docker:
@@ -70,7 +74,7 @@ server-linux-package-docker:
 	cp NOTICE.txt package/${PACKAGE_FOLDER}
 	cp webapp/NOTICE.txt package/${PACKAGE_FOLDER}/webapp-NOTICE.txt
 	mkdir -p dist
-	cd package && tar -czvf ../dist/focalboard-server-linux-amd64.tar.gz ${PACKAGE_FOLDER}
+	cd package && tar -czvf ../dist/focalboard-server-linux-${BUILD_PLATFORM}.tar.gz ${PACKAGE_FOLDER}
 	rm -rf package
 
 generate: ## Install and run code generators.

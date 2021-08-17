@@ -19,6 +19,9 @@ RUN mkdir /data
 ## Final image
 FROM gcr.io/distroless/base-debian10
 
+LABEL maintainer="Lukas Wolfsteiner <lukas@wolfsteiner.media>"
+LABEL org.opencontainers.image.source="https://github.com/dotWee/docker_focalboard-multiarch"
+
 WORKDIR /opt/focalboard
 
 COPY --from=gobuild --chown=nobody:nobody /data /data
